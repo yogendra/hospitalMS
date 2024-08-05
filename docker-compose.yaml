@@ -1,0 +1,39 @@
+version: '3'
+services:
+    mysql:
+        image: 'mysql/mysql-server:8.0'
+        hostname: mysql
+        ports:
+            - '${FORWARD_DB_PORT:-3306}:3306'
+        environment:
+            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ROOT_HOST: '%'
+            MYSQL_DATABASE: '${DB_DATABASE}'
+            MYSQL_USER: '${DB_USERNAME}'
+            MYSQL_PASSWORD: '${DB_PASSWORD}'
+            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        volumes:
+            - 'mysql:/var/lib/mysql'
+            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
+
+    yugabyte:
+        image: yugabytedb/yugabyte:2024.1.1.0-b137
+        hostname: yugabyte
+        ports:
+            - 7000:7000
+            - 9000:9000
+            - 15433:15433
+            - 5433:5433
+        command: bin/yugabyted start --background=false
+
+    yb-voyager:
+        image: yugabytedb/yb-voyager:latest        
+        command: tail -f /dev/null
+
+volumes:
+    mysql:
+        driver: local
+    yugabyte:
+        driver: local
+    yb-voyager:
+        driver: local
