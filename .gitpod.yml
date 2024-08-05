@@ -6,12 +6,6 @@
 
 tasks:
 
-  - name: YugabyteDB Voyager Helper Script Setup
-    before: |
-      docker pull yugabytedb/yb-voyager:latest
-    command: |      
-      wget -O ./yb-voyager https://raw.githubusercontent.com/yugabyte/yb-voyager/main/docker/yb-voyager-docker && chmod +x ./yb-voyager && sudo mv yb-voyager /usr/local/bin/yb-voyager
-    
   - name: PHP
     openMode: split-left
     init: |
@@ -22,22 +16,18 @@ tasks:
       php artisan storage:link
       php artisan serve
     
-
   - name: Node
+    openMode: split-right
     init: npm install
     command: |
       npm run dev
       npm run watch
   
-  - name: Host Shell
-    openMode: split-right
-    command: |
-      docker compose up -d
-      
-
   - name: Migration
     openIn: bottom
     openMode: tab-after
+    init: |
+      docker compose up -d
     command: |
       docker compose exec yb-voyager bash -l 
   
@@ -47,7 +37,12 @@ tasks:
     command: |
       gp ports await 5433
       docker compose exec yugabyte ysqlsh -h yugabyte
-
+  - name: MySQL Shell
+    openIn: bottom
+    openMode: split-right
+    command: |
+      gp ports await 3306
+      docker compose exec mysql mysql
 ports:
   - port: 3306
     onOpen: ignore
